@@ -53,12 +53,6 @@ def getlistitemdata(itemc):
 
 def downpage(url):
 
-    filename = '/tmp/bck.txt'
-    cookie = cookielib.MozillaCookieJar(filename)
-    handler = urllib2.HTTPCookieProcessor(cookie)
-    opener = urllib2.build_opener(handler, urllib2.HTTPHandler)
-    urllib2.install_opener(opener)
- 
     header = {
         "User-Agent" : "Mozilla/5.0 (X11; Linux x86_64; rv:95.0) Gecko/20100101 Firefox/95.0",
         "Alt-Used" : "www.quqidm.com",
@@ -75,7 +69,7 @@ def downpage(url):
     req = urllib2.Request(url, headers=header)
     res = urllib2.urlopen(req).read()
 
-    cookie.save(ignore_discard=True, ignore_expires=True)
+    #cookie.save(ignore_discard=True, ignore_expires=True)
     return res
 
 def downsrc(vid,srcid,epid):
@@ -97,28 +91,23 @@ def downsrc(vid,srcid,epid):
         "X-Requested-With" : "XMLHttpRequest"
     }
     #获取一个保存cookie的对象
-    #cj = cookielib.LWPCookieJar()
+    cj = cookielib.LWPCookieJar()
     #将一个保存cookie对象，和一个HTTP的cookie的处理器绑定
-    #cookie_support = urllib2.HTTPCookieProcessor(cj)
+    cookie_support = urllib2.HTTPCookieProcessor(cj)
     #创建一个opener，将保存了cookie的http处理器，还有设置一个handler用于处理http的URL的打开
-    #opener = urllib2.build_opener(cookie_support, urllib2.HTTPHandler)
+    opener = urllib2.build_opener(cookie_support, urllib2.HTTPHandler)
     #将包含了cookie、http处理器、http的handler的资源和urllib2对象板顶在一起
-    #urllib2.install_opener(opener)
+    urllib2.install_opener(opener)
     ret=""
     i=5
     downpage(refurl) #this is to get cookie
 
-    filename = '/tmp/bck.txt'
-    cookie = cookielib.MozillaCookieJar(filename)
-    handler = urllib2.HTTPCookieProcessor(cookie)
-    opener = urllib2.build_opener(handler, urllib2.HTTPHandler)
-    urllib2.install_opener(opener)
- 
+     
     while i>0 and (ret=="err:timeout" or ret==""):
         try:
             req = urllib2.Request(url, headers=header)
             ret = urllib2.urlopen(req, timeout = 5).read()
-            cookie.save(ignore_discard=True, ignore_expires=True)
+            #cookie.save(ignore_discard=True, ignore_expires=True)
         except:
             pass
         i=i-1
