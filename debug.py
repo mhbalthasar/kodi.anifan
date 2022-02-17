@@ -1,15 +1,10 @@
 import sys
 import os
-import sourceadapter as src
 import json
 import urllib
+sys.path.append("%s/videosource" % os.path.split(os.path.realpath(__file__))[0])
+import adapter1 as src
 
-#sys.path.append("./pkg")
-
-#import js2py
-
-#dat=src.getList(2022,1,0)
+#print("Debug Via: 22880 -2 -2")
+#dat=src.getPlayUrl("22880","2","2")
 #print(dat)
-#adat=src.getBangumVideoList("","18729","1")
-dat=src.getPlayUrl("23080","1","1")
-print(dat)

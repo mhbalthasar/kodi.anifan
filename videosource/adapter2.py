@@ -15,6 +15,7 @@ import time
 import os
 
 baseurl = base64.b64decode("aHR0cHM6Ly93d3cucXVxaWRtLmNvbQ==")
+basedomain = base64.b64decode("d3d3LnFpcXVkbS5jb20=")
 
 def isfirstpage(code):
     sign=">上一页<"
@@ -52,15 +53,14 @@ def getlistitemdata(itemc):
     return {'vid': vid, 'url':url,'title':title,'status':status}
 
 def downpage(url):
-
     header = {
         "User-Agent" : "Mozilla/5.0 (X11; Linux x86_64; rv:95.0) Gecko/20100101 Firefox/95.0",
-        "Alt-Used" : "www.quqidm.com",
+        "Alt-Used" : basedomain,
         "Accept" : "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
         "Accept-Language" : "zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2",
         "Accept-Encoding" : "deflate",
         "Connection" : "keep-alive",
-        "Referer" : "https://www.quqidm.com/list/?region=%E6%97%A5%E6%9C%AC",
+        "Referer" : baseurl+"/list/?region=%E6%97%A5%E6%9C%AC",
         "Sec-Fetch-Dest" : "document",
         "Sec-Fetch-Mode" : "navigate",
         "Sec-Fetch-Site" : "same-origin",
@@ -69,15 +69,65 @@ def downpage(url):
     req = urllib2.Request(url, headers=header)
     res = urllib2.urlopen(req).read()
 
-    #cookie.save(ignore_discard=True, ignore_expires=True)
     return res
+
+def printcookie(ck):
+    for c in ck:
+        print c.name, ":", c.value
+
+def setCookie(ck):
+    cT1=""
+    for c in ck:
+        if c.name=="t1":
+            cT1=c.value
+    if cT1=="":
+        return
+    tT1 = int(round(int(cT1) / 1000)) >> 5
+    k2 = ( tT1 * ( tT1 % 4096 ) + 39382 ) * ( tT1 % 4096) + tT1
+    t2 = int(time.time() * 1000)
+    ksub=str(k2 % 10)
+    while True:
+        t2 = int(time.time() * 1000)
+        tsub=str(t2 % 1000)
+        try:
+            if tsub.index(ksub)>0 :
+                break
+        except:
+            pass
+    domain=basedomain
+    path="/"
+    k2=cookielib.Cookie(version=0,name="k2",value=str(k2),
+                     port=None, port_specified=None,
+                     domain=domain, domain_specified=None, domain_initial_dot=None,
+                     path=path, path_specified=None,
+                     secure=None,
+                     expires=None,
+                     discard=None,
+                     comment=None,
+                     comment_url=None,
+                     rest=None,
+                     rfc2109=False,)
+    t2=cookielib.Cookie(version=0,name="t2",value=str(t2),
+                     port=None, port_specified=None,
+                     domain=domain, domain_specified=None, domain_initial_dot=None,
+                     path=path, path_specified=None,
+                     secure=None,
+                     expires=None,
+                     discard=None,
+                     comment=None,
+                     comment_url=None,
+                     rest=None,
+                     rfc2109=False,)
+    ck.set_cookie(k2)
+    ck.set_cookie(t2)
+ 
 
 def downsrc(vid,srcid,epid):
     url="%s/_getplay?aid=%s&playindex=%s&epindex=%s&r=%s" % (baseurl,vid,srcid,epid,str(random.random()))
     refurl="%s/vp/%s-%s-%s.html" % (baseurl,vid,srcid,epid)
     header = {
         "User-Agent" : "Mozilla/5.0 (X11; Linux x86_64; rv:95.0) Gecko/20100101 Firefox/95.0",
-        "Alt-Used" : "www.quqidm.com",
+        "Alt-Used" : basedomain,
         "Accept" : "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
         "Accept-Language" : "zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2",
         "Accept-Encoding" : "deflate",
@@ -100,14 +150,34 @@ def downsrc(vid,srcid,epid):
     urllib2.install_opener(opener)
     ret=""
     i=5
+    printcookie(cj)
     downpage(refurl) #this is to get cookie
-
-     
+    printcookie(cj)
+    cookstr="%s^%s_$_|" % ("abcc", refurl)
+    domain=basedomain
+    path="/"
+    cook=cookielib.Cookie(version=0,name="qike123",value=cookstr,
+                     port=None, port_specified=None,
+                     domain=domain, domain_specified=None, domain_initial_dot=None,
+                     path=path, path_specified=None,
+                     secure=None,
+                     expires=None,
+                     discard=None,
+                     comment=None,
+                     comment_url=None,
+                     rest=None,
+                     rfc2109=False,)
+    cj.set_cookie(cook)
+    #setCookie(cj)
+    #req = urllib2.Request(url, headers=header)
+    #ret = urllib2.urlopen(req, timeout = 5).read()
+    #printcookie(cj)
     while i>0 and (ret=="err:timeout" or ret==""):
         try:
+            setCookie(cj)
             req = urllib2.Request(url, headers=header)
             ret = urllib2.urlopen(req, timeout = 5).read()
-            #cookie.save(ignore_discard=True, ignore_expires=True)
+            printcookie(cj)
         except:
             pass
         i=i-1
@@ -179,6 +249,7 @@ def decodeUrl(panurl):
     return(urllib.unquote(hf_panurl))
 
 def getPlayUrl(avid,srcid,epid):
+    print("read url: avid : %s srcid: %s epid: %s" % (avid,srcid,epid))
     cxurl=downsrc(avid,srcid,epid)
     if cxurl=="" or cxurl=="err:timeout":
         return ""

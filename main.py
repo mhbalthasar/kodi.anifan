@@ -2,6 +2,7 @@
 import json
 import re
 import sys
+import os
 import urllib
 
 import urllib2
@@ -11,10 +12,13 @@ import xbmcgui
 import xbmcplugin
 import xbmcgui as gui
 import xbmcplugin as plug
-import sourceadapter as src
 import time
 
-sys.path.append("./pkg")
+reload(sys)
+sys.setdefaultencoding("utf-8")
+
+sys.path.append("%s/videosource" % os.path.split(os.path.realpath(__file__))[0])
+import adapter1 as src
 
 base_url = sys.argv[0]
 addon_handle = int(sys.argv[1])
@@ -31,7 +35,7 @@ mode = args.get('mode', None)
 if mode is None:
     byear=int(time.strftime("%Y", time.localtime()))
     li = gui.ListItem(u"全部年份".encode('utf-8'))
-    url = build_url({'mode' : 'yearlist', 'year' : '', 'page': '1'})
+    url = build_url({'mode' : 'yearlist', 'year' : 'all', 'page': '1'})
     plug.addDirectoryItem(handle=addon_handle, url=url, listitem=li, isFolder=True)
     for i in range(10):
         xw=byear-i
@@ -45,7 +49,7 @@ elif mode[0] == 'yearlist':
     page = args['page'][0]
     
     li = gui.ListItem(u"全部番剧".encode('utf-8'))
-    url = build_url({'mode' : 'seasonlist', 'year' : year, 'season': '','page': page})
+    url = build_url({'mode' : 'seasonlist', 'year' : year, 'season': 'all','page': page})
     plug.addDirectoryItem(handle=addon_handle, url=url, listitem=li, isFolder=True)
   
     li = gui.ListItem(u"1月新番".encode('utf-8'))
@@ -85,7 +89,7 @@ elif mode[0] == 'seasonlist':
         astatus=dti["status"]
         avid=dti["vid"]
         li = gui.ListItem("%s [%s]" % (atitle,astatus))
-        url = build_url({'mode' : 'bangumpage', 'aurl' : aurl, 'vid': avid})
+        url = build_url({'mode' : 'bangumpage', 'aurl' : aurl, 'vid': avid, 'bangumtitle' : atitle })
         plug.addDirectoryItem(handle=addon_handle, url=url, listitem=li, isFolder=True)
  
     if lst["NextPage"]:
@@ -100,13 +104,14 @@ elif mode[0] == 'seasonlist':
 elif mode[0] == "bangumpage":
     aurl = args['aurl'][0] #Aurl
     avid = args['vid'][0]
+    btitle = args['bangumtitle'][0]
     plist=src.getBangumPlayList(aurl,avid)
     for sli in plist:
         cnt=sli["count"]
         sid=sli["srcid"]
         title=sli["title"]
-        li = gui.ListItem("%s [含%s集]" % (title,cnt))
-        url = build_url({'mode' : 'bangumplay', 'aurl' : aurl, 'vid': avid, 'srcid': sid, 'srccount' : cnt})
+        li = gui.ListItem("%s [含%s集] - %s" % (title,cnt,btitle))
+        url = build_url({'mode' : 'bangumplay', 'aurl' : aurl, 'vid': avid, 'srcid': sid, 'srccount' : cnt, 'bangumtitle' : btitle })
         plug.addDirectoryItem(handle=addon_handle, url=url, listitem=li, isFolder=True)
 
     plug.endOfDirectory(addon_handle)
@@ -115,14 +120,15 @@ elif mode[0] == "bangumplay":
     aurl = args['aurl'][0] #Aurl
     avid = args['vid'][0]
     srcid = args['srcid'][0]
+    btitle = args['bangumtitle'][0]
     plist=src.getBangumVideoList(aurl,avid,srcid)
     for eli in plist:
         avid=eli["vid"]
         srcid=eli["srcid"]
         title=eli["title"]
         epid=eli["epid"]
-        li = gui.ListItem(title)
-        url = build_url({'mode' : 'playvideo', 'title': title, 'vid': avid, 'srcid': srcid, 'epid' : epid})
+        li = gui.ListItem("%s - %s" % (title, btitle))
+        url = build_url({'mode' : 'playvideo', 'title': title, 'vid': avid, 'srcid': srcid, 'epid' : epid, 'bangumtitle': btitle})
         plug.addDirectoryItem(handle=addon_handle, url=url, listitem=li, isFolder=True)
 
     plug.endOfDirectory(addon_handle)
@@ -133,16 +139,18 @@ elif mode[0] == 'playvideo':
     epid = args['epid'][0]
     title = args['title'][0]
     vurl = src.getPlayUrl(vid,srcid,epid)
+    btitle = args['bangumtitle'][0]
     if vurl == '':
-        li = gui.ListItem("%s 解析失败,请换源或重试" % title)
+        li = gui.ListItem("%s [ %s ]解析失败,请换源或重试" % (title,btitle))
         url = build_url({'mode' : 'playvideo', 'title': title, 'vid': vid, 'srcid': srcid, 'epid' : epid})
         plug.addDirectoryItem(handle=addon_handle, url=url, listitem=li, isFolder=True)
     elif vurl["url"] == '':
-            li = gui.ListItem("%s 地址解析失败,请换源或重试" % title)
+            li = gui.ListItem("%s [ %s ]地址解析失败,请换源或重试" % (title,btitle))
             url = build_url({'mode' : 'playvideo', 'title': title, 'vid': vid, 'srcid': srcid, 'epid' : epid})
             plug.addDirectoryItem(handle=addon_handle, url=url, listitem=li, isFolder=True)
     else:
-        li = gui.ListItem("点击播放 %s [%s]" % (title,vurl["ext"]))
+        li = gui.ListItem("点击播放 %s [%s] - %s" % (title, vurl["ext"], btitle))
+        #%s [%s]".decode().encode() % (title,vurl["ext"]))
         plug.addDirectoryItem(handle=addon_handle, url=vurl["url"], listitem=li)
     
     plug.endOfDirectory(addon_handle)
