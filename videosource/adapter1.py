@@ -171,7 +171,7 @@ def islastpage(code):
         return False
 
 def getlistitemarray(code):
-    return re.findall("<div class=\"cell blockdiff\">(.*?)<div class=\"cell_imform\">",code,re.S)
+    return re.findall("<div class=\"cell blockdiff[2]*\">(.*?)<div class=\"cell_imform\">",code,re.S)
     #re.findall("<li>\s*<a href=\"/view/(.*?)</li>",code, re.S)
 
 def getlistitemdata(itemc):
