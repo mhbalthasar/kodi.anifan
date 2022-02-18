@@ -13,7 +13,7 @@ import xbmcplugin
 import xbmcgui as gui
 import xbmcplugin as plug
 import time
-import fs
+#import fs
 
 reload(sys)
 sys.setdefaultencoding("utf-8")
@@ -45,7 +45,7 @@ def readSrv():
     sfile="m3u8srv.txt";
     saddr="";
     if os.path.exists(sfile):
-        with f=open(sfile,'r',encoding='utf-8'):
+        with open(sfile,'r') as f:
             try:
                 for line in f:
                     saddr=line
@@ -200,6 +200,17 @@ elif mode[0] == 'playvideo':
         #%s [%s]".decode().encode() % (title,vurl["ext"]))
         setupinfo(li,vurl)
         plug.addDirectoryItem(handle=addon_handle, url=vurl["url"], listitem=li)
+        if vurl["ext"].lower()=="m3u8":
+            if readSrv()!="":
+                li = gui.ListItem("点击解析播放 %s %s [%s] - %s" % (srctitle, title, vurl["ext"], btitle))
+                li.setIconImage( apic or '')
+                li.setArt({ 'thumb': apic or ''})
+                #%s [%s]".decode().encode() % (title,vurl["ext"]))
+                setupinfo(li,vurl)
+                rsrv=readSrv()
+                if not rsrv.endswith("/"):
+                    rsrv=rsrv+"/"
+                plug.addDirectoryItem(handle=addon_handle, url=rsrv+"m3u8/"+vurl["url"], listitem=li)
     
     plug.endOfDirectory(addon_handle)
 
@@ -212,7 +223,7 @@ elif mode[0] == "setm3u8":
     if kb.isConfirmed():
         mhst=kb.getText()
         saddr=mhst
-        with f=open(sfile,'w',encoding='utf-8'):
+        with open(sfile,'w') as f:
             f.write(saddr)
     li = gui.ListItem(u"M3U8服务器:%s" % saddr)
     url = build_url({'mode' : 'setm3u8'})
