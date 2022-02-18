@@ -46,7 +46,7 @@ function sendM3U8(uri, headuri, response){
 	var schema=url.parse(uri).protocol;
 	var helper=http;
 	if(schema=="https:")helper=https;
-	//return new Promise(function (resolve, reject) {
+	return new Promise(function (resolve, reject) {
 	var req = helper.get(uri, function(res) {
 		res.setEncoding('utf8');
 		console.log(res.headers);
@@ -84,7 +84,7 @@ function sendM3U8(uri, headuri, response){
 	}).on("error",(e)=>{
 		console.log('error');
 	});
-	//});
+	});
 }
 
 function sendJpgTs(uri, response){
