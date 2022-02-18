@@ -44,7 +44,7 @@ def readSrv():
     addon = xbmcaddon.Addon()
     if addon.getSetting('m3u8dex') == 'true':
         return addon.getSetting('m3u8srv')
- 
+    return ""
 
 
 mode = args.get('mode', None)
