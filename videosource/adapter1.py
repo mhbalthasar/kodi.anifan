@@ -153,6 +153,66 @@ def downsrc(vid,srcid,epid):
 
 
 #END DEFINE
+def IsStrContains(substr,strs):
+    try:
+        string.index(strs, substr)
+        return True
+    except ValueError:
+        return False
+
+def getWeekdayList():
+    code=downpage(baseurl)
+    weekDay={
+            "1":[],
+            "2":[],
+            "3":[],
+            "4":[],
+            "5":[],
+            "6":[],
+            "7":[],
+                }
+    ndi={
+            "1":0,
+            "2":0,
+            "3":0,
+            "4":0,
+            "5":0,
+            "6":0,
+            "7":0,
+                }
+    try:
+        mr=re.findall("var new_anime_list\s=\s\[(.+)\];",code)[0]
+        jsr=json.loads("["+mr+"]")
+        for i in jsr:
+            if int(i["wd"]) == 0:
+                i["wd"]="7"
+                i["url"]="%s/play/%s" % (baseurl,i["id"])
+                if i["isnew"]:
+                    i["namefornew"]="NEW! "+i["namefornew"]
+                cn=i["namefornew"]
+                if IsStrContains("全集",cn):
+                    continue
+                if IsStrContains("完结",cn):
+                    weekDay["7"].append(i)
+                else:
+                    weekDay["7"].insert(ndi["7"],i)
+                    ndi["7"]=ndi["7"]+1
+            else:
+                i["wd"]=str(int(i["wd"]))
+                i["url"]="%s/play/%s" % (baseurl,i["id"])
+                cn=i["namefornew"]
+                if i["isnew"]:
+                    i["namefornew"]="NEW! "+i["namefornew"]
+                if IsStrContains("全集",cn):
+                    continue
+                if IsStrContains("完结",cn):
+                    weekDay[i["wd"]].append(i)
+                else:
+                    weekDay[i["wd"]].insert(ndi[i["wd"]],i)
+                    ndi[i["wd"]]=ndi[i["wd"]]+1
+    except:
+       pass
+    return weekDay
 
 def isfirstpage(code):
     sign="<a class=\"pbutton pbutton_current asciifont\" href=\"javascript:void(0);\">首页</a>"
@@ -216,12 +276,22 @@ def getList(year,season,page):
 def getBangumPlayList(aurl,avid):
     code=downpage(aurl)
     season=[]
+    picurl="null"
+    try:
+        try:
+            picurl=re.findall("<img.*class=\"poster\".*src=\"([^\"]+)\"",code)[0]
+        except:
+            picurl=re.findall("<img.*id=\"play_poster_img\".*src=\"([^\"]+)\"",code)[0]
+        if picurl.startswith("//"):
+            picurl="https:"+picurl
+    except:
+        pass
     for i in range(10):
         try:
             tstr="/play/%s?playid=%s_1" % (avid,str(i))
             string.index(code, tstr)
             lnn=len(re.findall("/play/%s\?playid=%s_([\d]+)" % (avid,str(i)),code))
-            season.append({'title': "播放源%s" % str(i), 'srcid': str(i), 'count': str(lnn)})
+            season.append({'title': "播放源%s" % str(i), 'srcid': str(i), 'count': str(lnn), 'picurl': picurl})
         except ValueError:
             pass
     return season

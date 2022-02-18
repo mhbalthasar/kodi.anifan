@@ -8,3 +8,5 @@ import adapter1 as src
 #print("Debug Via: 22880 -2 -2")
 #dat=src.getPlayUrl("22880","2","2")
 #print(dat)
+#dat=src.getWeekdayList()
+#print(dat)

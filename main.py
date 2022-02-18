@@ -14,6 +14,7 @@ import xbmcgui as gui
 import xbmcplugin as plug
 import xbmcaddon
 import time
+from datetime import datetime
 #import fs
 
 reload(sys)
@@ -51,6 +52,10 @@ mode = args.get('mode', None)
 #这里是初始界面
 if mode is None:
     byear=int(time.strftime("%Y", time.localtime()))
+    li = gui.ListItem(u"新番快速检索>>".encode('utf-8'))
+    dow = datetime.now().isoweekday()
+    url = build_url({'mode' : 'xfsearch', 'weekday' : str(dow)})
+    plug.addDirectoryItem(handle=addon_handle, url=url, listitem=li, isFolder=True)
     li = gui.ListItem(u"全部年份".encode('utf-8'))
     url = build_url({'mode' : 'yearlist', 'year' : 'all', 'page': '1'})
     plug.addDirectoryItem(handle=addon_handle, url=url, listitem=li, isFolder=True)
@@ -61,6 +66,45 @@ if mode is None:
         plug.addDirectoryItem(handle=addon_handle, url=url, listitem=li, isFolder=True)
     
     plug.endOfDirectory(addon_handle)
+elif mode[0] == 'xfsearch':
+    do = args['weekday'][0]
+    dod=int(do)
+    dos=str(dod)
+    dosck={'1':'周一','2':'周二','3':'周三','4':'周四','5':'周五','6':'周六','7':'周日'}
+    li = gui.ListItem((u"--"+dosck[dos]+u"番剧--").encode('utf-8'))
+    plug.addDirectoryItem(handle=addon_handle, url="", listitem=li, isFolder=False)
+    try:
+    #if 1 == 1:
+        weekdata=src.getWeekdayList()
+        week=weekdata[dos]
+        for itm in week:
+            aurl=itm["url"]
+            atitle=itm["name"]
+            astatus=itm["namefornew"]
+            avid=itm["id"]
+            apic="null"#dti["pic"]
+            stitle="[%s]%s" % (astatus,atitle)
+            li = gui.ListItem(stitle.replace("[[","[").replace("]]","]"))
+            li.setIconImage( apic or '')
+            li.setArt({ 'thumb': apic or ''})
+            url = build_url({'mode' : 'bangumpage', 'aurl' : aurl, 'vid': avid, 'bangumtitle' : atitle, 'bpic': apic })
+            plug.addDirectoryItem(handle=addon_handle, url=url, listitem=li, isFolder=True)
+    except:
+        pass
+    li = gui.ListItem((u"---------------").encode('utf-8'))
+    plug.addDirectoryItem(handle=addon_handle, url="", listitem=li, isFolder=False)
+    i=1
+    while(i<8):
+        if not i==dod:
+            li = gui.ListItem((u""+dosck[str(i)]+u"番剧>>").encode('utf-8'))
+            url = build_url({'mode' : 'xfsearch', 'weekday' : str(i)})
+            plug.addDirectoryItem(handle=addon_handle, url=url, listitem=li, isFolder=True)
+        i=i+1
+    li = gui.ListItem(u"<<返回首页".encode('utf-8'))
+    url = build_url({'history' : "back"})
+    plug.addDirectoryItem(handle=addon_handle, url=url, listitem=li, isFolder=True)
+    plug.endOfDirectory(addon_handle)
+
 #按年加载
 elif mode[0] == 'yearlist':
     year = args['year'][0] #获取参数
@@ -133,6 +177,8 @@ elif mode[0] == "bangumpage":
         sid=sli["srcid"]
         title=sli["title"]
         li = gui.ListItem("%s [含%s集] - %s" % (title,cnt,btitle))
+        if apic=="null":
+            apic=sli["picurl"]
         li.setIconImage( apic or '')
         li.setArt({ 'thumb': apic or ''})
         url = build_url({'mode' : 'bangumplay', 'aurl' : aurl, 'vid': avid, 'srcid': sid, 'srccount' : cnt, 'bangumtitle' : btitle, 'srctitle' : title, 'bpic' : apic })
