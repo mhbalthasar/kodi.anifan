@@ -13,6 +13,7 @@ import xbmcplugin
 import xbmcgui as gui
 import xbmcplugin as plug
 import time
+import fs
 
 reload(sys)
 sys.setdefaultencoding("utf-8")
@@ -40,6 +41,21 @@ def setupinfo(li,vurl):
     elif ext == "m3u8" :
         li.setProperty('mimetype', 'video/MP2T')
 
+def readSrv():
+    sfile="m3u8srv.txt";
+    saddr="";
+    if os.path.exists(sfile):
+        with f=open(sfile,'r',encoding='utf-8'):
+            try:
+                for line in f:
+                    saddr=line
+                    break
+            except:
+                pass
+    return saddr;
+ 
+
+
 mode = args.get('mode', None)
 #这里是初始界面
 if mode is None:
@@ -52,6 +68,9 @@ if mode is None:
         li = gui.ListItem((str(xw)).encode('utf-8'))
         url = build_url({'mode' : 'yearlist', 'year' : str(xw), 'page': '1'})
         plug.addDirectoryItem(handle=addon_handle, url=url, listitem=li, isFolder=True)
+    li = gui.ListItem(u"==设置M3U8修整服务器==".encode('utf-8'))
+    url = build_url({'mode' : 'setm3u8'})
+    plug.addDirectoryItem(handle=addon_handle, url=url, listitem=li, isFolder=True)
     plug.endOfDirectory(addon_handle)
 #按年加载
 elif mode[0] == 'yearlist':
@@ -182,6 +201,22 @@ elif mode[0] == 'playvideo':
         setupinfo(li,vurl)
         plug.addDirectoryItem(handle=addon_handle, url=vurl["url"], listitem=li)
     
+    plug.endOfDirectory(addon_handle)
+
+
+elif mode[0] == "setm3u8":
+    sfile="m3u8srv.txt";
+    saddr=readSrv();
+    kb = xbmc.Keyboard(saddr, u'请输入M3U8解析服务器的地址,如:http://abc.com/'.encode('utf-8'))
+    kb.doModal()
+    if kb.isConfirmed():
+        mhst=kb.getText()
+        saddr=mhst
+        with f=open(sfile,'w',encoding='utf-8'):
+            f.write(saddr)
+    li = gui.ListItem(u"M3U8服务器:%s" % saddr)
+    url = build_url({'mode' : 'setm3u8'})
+    plug.addDirectoryItem(handle=addon_handle, url=url, listitem=li, isFolder=True)
     plug.endOfDirectory(addon_handle)
 
 #BELOW IS THE TEMPLATE CODE
