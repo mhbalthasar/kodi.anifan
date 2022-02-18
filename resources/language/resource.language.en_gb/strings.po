@@ -23,5 +23,9 @@ msgid "Example"
 msgstr ""
 
 msgctxt "#32001"
-msgid "Debug"
+msgid "FIX M3U8"
+msgstr ""
+
+msgctxt "#32002"
+msgid "M3U8 FIX SERVER"
 msgstr ""
