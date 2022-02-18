@@ -12,6 +12,7 @@ import xbmcgui
 import xbmcplugin
 import xbmcgui as gui
 import xbmcplugin as plug
+import xbmcaddon
 import time
 #import fs
 
@@ -38,21 +39,11 @@ def setupinfo(li,vurl):
         li.setProperty('mimetype', 'video/mp4')
     elif ext == "fdv" :
         li.setProperty('mimetype', 'video/mp4')
-    elif ext == "m3u8" :
-        li.setProperty('mimetype', 'video/MP2T')
 
 def readSrv():
-    sfile="m3u8srv.txt";
-    saddr="";
-    if os.path.exists(sfile):
-        with open(sfile,'r') as f:
-            try:
-                for line in f:
-                    saddr=line
-                    break
-            except:
-                pass
-    return saddr;
+    addon = xbmcaddon.Addon()
+    if addon.getSetting('m3u8dex') == 'true':
+        return addon.getSetting('m3u8srv')
  
 
 
@@ -68,9 +59,7 @@ if mode is None:
         li = gui.ListItem((str(xw)).encode('utf-8'))
         url = build_url({'mode' : 'yearlist', 'year' : str(xw), 'page': '1'})
         plug.addDirectoryItem(handle=addon_handle, url=url, listitem=li, isFolder=True)
-    li = gui.ListItem(u"==设置M3U8修整服务器==".encode('utf-8'))
-    url = build_url({'mode' : 'setm3u8'})
-    plug.addDirectoryItem(handle=addon_handle, url=url, listitem=li, isFolder=True)
+    
     plug.endOfDirectory(addon_handle)
 #按年加载
 elif mode[0] == 'yearlist':
