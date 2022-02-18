@@ -23,5 +23,9 @@ msgid "Example"
 msgstr ""
 
 msgctxt "#32001"
-msgid "Debug"
+msgid "解析加密的m3u8"
+msgstr ""
+
+msgctxt "#32002"
+msgid "m3u8解析服务器"
 msgstr ""
