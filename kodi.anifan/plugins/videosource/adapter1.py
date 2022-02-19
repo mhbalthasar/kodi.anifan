@@ -17,6 +17,7 @@ import math
 
 basedomain = base64.b64decode("d3d3LmFnZW15cy5jb20=")
 baseurl = "https://" + basedomain
+playerhead = base64.b64decode("aHR0cHM6Ly9wbGF5LmFnZW15cy5jb206ODQ0Mw==")
 
 #START DEFINE GLOBAL ACTION FUNCTION
 WebCookie = {}
@@ -319,6 +320,11 @@ def getPlayUrl(avid,srcid,epid):
         return ""
     obj=json.loads(cxurl)
     curl=decodeUrl(obj["vurl"])
+    if not curl.startswith("http"):
+        if curl.startswith("/"):
+            curl=playerhead+curl
+        else:
+            curl=playerhead+"/"+curl
     k1=curl.split("&")[0].split("?")[0]
     k2,k3=os.path.splitext(k1)
     if k3.startswith('.'):
