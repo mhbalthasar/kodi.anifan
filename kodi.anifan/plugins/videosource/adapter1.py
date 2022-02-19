@@ -140,7 +140,7 @@ def downpage(url):
 
 def downsrc(vid,srcid,epid):
     url="%s/_getplay?aid=%s&playindex=%s&epindex=%s&r=%s" % (baseurl,vid,srcid,epid,str(random.random()))
-    x=downpage("https://www.agemys.com/play/"+vid+"?playid="+srcid+"_"+epid)
+    x=downpage(baseurl+"/play/"+vid+"?playid="+srcid+"_"+epid)
     header = initDefaultHeader("",True)
     req = urllib2.Request(url, headers=header)
     res = urllib2.urlopen(req)
