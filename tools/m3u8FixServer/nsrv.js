@@ -50,16 +50,19 @@ function sendM3U8(uri, headuri, response){
 	var req = helper.get(uri, function(res) {
 		res.setEncoding('utf8');
 		console.log(res.headers);
-		if (res.headers["content-type"]!="application/vnd.apple.mpegurl")
+		if ((res.headers["content-type"]!="application/vnd.apple.mpegurl") && (res.headers["content-type"]!="image/png"))
 		{
 			isClosed=true;
 			response.end();
 		}
-		//var m3u8="";
+		var m3u8="";
 		res.on("data",(data)=>{
+			m3u8+=data
+		});
+		res.on("end",()=>{
 			var red="";
 			//m3u8+=data;
-			MArr=data.split(/[(\r\n)\r\n]+/);
+			MArr=m3u8.split(/[(\r\n)\r\n]+/);
 			MArr.forEach((item,index)=>{
 				if(item.startsWith('#'))
 				{
@@ -77,8 +80,6 @@ function sendM3U8(uri, headuri, response){
 				}
 			})
 			response.write(red);
-		});
-		res.on("end",()=>{
 			response.end();
 		});
 	}).on("error",(e)=>{
