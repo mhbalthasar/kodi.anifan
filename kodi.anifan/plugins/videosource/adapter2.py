@@ -199,8 +199,12 @@ def getList(year,page):
     arg=buildArg(year,page)
     urlx="%s/index.php%s" % (baseurl,arg)
     code=downpage(urlx)
-    result['PrevPage']=not isfirstpage(code)
-    result['NextPage']=not islastpage(code)
+    if IsStrContains("<div id=\"page\">",code):
+        result['PrevPage']=not isfirstpage(code)
+        result['NextPage']=not islastpage(code)
+    else:
+        result['PrevPage']=False
+        result['NextPage']=False
     listi=getlistitemarray(code)
     for it in listi:
         result["Data"].append(getlistitemdata(it))
